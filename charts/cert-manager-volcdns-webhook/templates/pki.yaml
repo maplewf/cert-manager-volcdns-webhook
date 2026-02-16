@@ -1,0 +1,64 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-volcdns-webhook.selfSignedIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-volcdns-webhook.name" . }}
+    chart: {{ include "cert-manager-volcdns-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-volcdns-webhook.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-volcdns-webhook.name" . }}
+    chart: {{ include "cert-manager-volcdns-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-volcdns-webhook.rootCAIssuer" . }}
+  duration: 43800h # 5y
+  issuerRef:
+    name: {{ include "cert-manager-volcdns-webhook.selfSignedIssuer" . }}
+  commonName: "ca.cert-manager-volcdns-webhook.cert-manager"
+  isCA: true
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-volcdns-webhook.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-volcdns-webhook.name" . }}
+    chart: {{ include "cert-manager-volcdns-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ca:
+    secretName: {{ include "cert-manager-volcdns-webhook.rootCAIssuer" . }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-volcdns-webhook.servingCertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-volcdns-webhook.name" . }}
+    chart: {{ include "cert-manager-volcdns-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-volcdns-webhook.servingCertificate" . }}
+  duration: 8760h # 1y
+  issuerRef:
+    name: {{ include "cert-manager-volcdns-webhook.rootCAIssuer" . }}
+  dnsNames:
+  - {{ include "cert-manager-volcdns-webhook.fullname" . }}
+  - {{ include "cert-manager-volcdns-webhook.fullname" . }}.{{ .Release.Namespace }}
+  - {{ include "cert-manager-volcdns-webhook.fullname" . }}.{{ .Release.Namespace }}.svc
