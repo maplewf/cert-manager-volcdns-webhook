@@ -2,5 +2,4 @@ apiVersion: v2
 name: cert-manager-volcdns-webhook
 description: A Helm chart for cert-manager-volcdns-webhook
 type: application
-version: 0.0.3
-appVersion: 0.0.1
+version: 1.0.0
